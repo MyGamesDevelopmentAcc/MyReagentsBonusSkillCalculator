@@ -67,13 +67,13 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
          -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
          -- print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         --  print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
          --end
       elseif (v.reagentType == 0) then --finishing
          -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
          -- print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         -- print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
       end
    end
 
@@ -115,13 +115,17 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
 
    local craftingReagents = {}
    for i = 1, #recipeReagents, 1 do
-      table.insert(craftingReagents, recipeReagents[i][#recipeReagents[i]])
+      table.insert(craftingReagents, recipeReagents[i][#recipeReagents[i] > 1 and 3 or 1])
    end
-   local maxBonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents).bonusSkill;
-   table.insert(reagentsInfo, { name = "Base", value = baseSkill + baseBonusSkill });
-   table.insert(reagentsInfo, { name = "+mats", value = baseSkill + maxBonusFromMaterials });
-   table.insert(reagentsInfo, { name = "+illustrous", value = baseSkill + maxBonusFromMaterials + 30 });
-   local maxSkillFromMaterials = baseSkill + maxBonusFromMaterials;
+   local t3BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents).bonusSkill;
+   local t3SkillFromMaterials = baseSkill + t3BonusFromMaterials;
+
+   craftingReagents = {}
+   for i = 1, #recipeReagents, 1 do
+      table.insert(craftingReagents, recipeReagents[i][#recipeReagents[i] > 1 and 2 or 1])
+   end
+   local t2BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents).bonusSkill;
+   local t2SkillFromMaterials = baseSkill + t2BonusFromMaterials;
 
 
    local addedSkillDifficulties = { 0,
@@ -195,49 +199,60 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    for _, ilvlModifier in ipairs(ilvlModifiers) do
       local name = ilvlModifier.name;
       local difficulty = baseDifficulty + ilvlModifier.change;
-
-      local binaryModifiersBonusDifficulty = 0;
-      local binaryModifiersName = ""
-      if #binaryModifiers > 0 then
-         binaryModifiersName = binaryModifiersName .. "[";
-         for i = 1, #binaryModifiers, 1 do
-            binaryModifiersBonusDifficulty = binaryModifiersBonusDifficulty + binaryModifiers[i].change;
-            binaryModifiersName = binaryModifiersName .. binaryModifiers[i].name;
-            if i ~= #binaryModifiers then name = name .. " / "; end
+   for mod = #ilvlModifiers, 1, -1 do
+      for x, skill in ipairs({ t2SkillFromMaterials, t3SkillFromMaterials }) do
+         local ilvlModifier = ilvlModifiers[mod];
+         local name = ilvlModifier.name;
+         local difficulty = baseDifficulty + ilvlModifier.change;
+         --name = name .. skill .." - "
+         if x == 1 then
+            name = name .. "[t2]"
+         else
+            name = name .. "[t3]"
          end
-         binaryModifiersName = binaryModifiersName .. "]";
-      end
-      local procChance = calculateChancesToReachDifficulty(
-         difficulty + binaryModifiersBonusDifficulty, maxSkillFromMaterials,
-         hiddenSkillBonus,
-         inspirationSkillBonus,
-         inspirationBonusChances
-      )
-      addChancesForSkillDifficulty(name .. binaryModifiersName, procChance)
-      if (procChance < 1 and illustrousInsight) then
-         procChance = calculateChancesToReachDifficulty(
-            difficulty + binaryModifiersBonusDifficulty, maxSkillFromMaterials + 30,
+         local binaryModifiersBonusDifficulty = 0;
+         local binaryModifiersName = ""
+         if #binaryModifiers > 0 then
+            binaryModifiersName = binaryModifiersName .. "[";
+            for i = 1, #binaryModifiers, 1 do
+               binaryModifiersBonusDifficulty = binaryModifiersBonusDifficulty + binaryModifiers[i].change;
+               binaryModifiersName = binaryModifiersName .. binaryModifiers[i].name;
+               if i ~= #binaryModifiers then binaryModifiersName = binaryModifiersName .. "/"; end
+            end
+            binaryModifiersName = binaryModifiersName .. "]";
+         end
+         local procChance = calculateChancesToReachDifficulty(
+            difficulty + binaryModifiersBonusDifficulty, skill,
             hiddenSkillBonus,
             inspirationSkillBonus,
             inspirationBonusChances
          )
-         addChancesForSkillDifficulty(name .. binaryModifiersName .. "+i", procChance)
-         if (procChance < 1) then
+         addChancesForSkillDifficulty(name .. binaryModifiersName, procChance)
+         if (procChance < 1 and illustrousInsight) then
             procChance = calculateChancesToReachDifficulty(
-               difficulty, maxSkillFromMaterials,
+               difficulty + binaryModifiersBonusDifficulty, skill + 30,
                hiddenSkillBonus,
                inspirationSkillBonus,
                inspirationBonusChances
             )
-            addChancesForSkillDifficulty(name, procChance)
+            addChancesForSkillDifficulty(name .. binaryModifiersName .. "+i", procChance)
             if (procChance < 1) then
                procChance = calculateChancesToReachDifficulty(
-                  difficulty, maxSkillFromMaterials + 30,
+                  difficulty, skill,
                   hiddenSkillBonus,
                   inspirationSkillBonus,
                   inspirationBonusChances
                )
-               addChancesForSkillDifficulty(name .. "+i", procChance)
+               addChancesForSkillDifficulty(name, procChance)
+               if (procChance < 1) then
+                  procChance = calculateChancesToReachDifficulty(
+                     difficulty, skill + 30,
+                     hiddenSkillBonus,
+                     inspirationSkillBonus,
+                     inspirationBonusChances
+                  )
+                  addChancesForSkillDifficulty(name .. "+i", procChance)
+               end
             end
          end
       end
@@ -246,26 +261,13 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
       -- print("diff", addedSkillDifficulty)
       local difficulty = addedSkillDifficulty + baseDifficulty;
       addChancesForSkillDifficulty(addedSkillDifficulty, calculateChancesToReachDifficulty(
-         difficulty, maxSkillFromMaterials,
+         difficulty, t3SkillFromMaterials,
          hiddenSkillBonus,
          inspirationSkillBonus,
          inspirationBonusChances
       ))
    end
 
-   --[[
-123 "Add Embellishment"
-180 "Add Embellishment"
-93 "Illustroius Insight"
-227 "Customize Secondary Stats"
-126 "Infuse with Power"
-184 "Chain Oil"
-]]
-   -- 415 *0.05 = 20
-   -- 415 - 401   = 14
-   -- 1/3
-   -- 0,66
-   -- 36,3
    AddonNS.gui.mainFrame:Show();
    AddonNS.gui:DisplayData(reagentsInfo);
 end
