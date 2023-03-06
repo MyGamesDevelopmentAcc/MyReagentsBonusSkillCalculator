@@ -1,0 +1,9 @@
+## Interface: 100002
+## Title: My ReagentsBonusSkillCalculator
+## DefaultState: Enabled
+### SavedVariables: 
+## Dependencies: Ace3, MyLibrary_GUI
+common/common.xml
+main.lua
+gui.lua
+

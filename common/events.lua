@@ -1,0 +1,3 @@
+local addonName, AddonNS = ...
+AddonNS.events = {}
+LibStub("AceEvent-3.0"):Embed(AddonNS.events);
