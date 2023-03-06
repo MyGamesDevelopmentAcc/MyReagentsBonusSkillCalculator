@@ -154,8 +154,10 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
       105,
       110 }
    local function addChancesForSkillDifficulty(difficulty, chance)
-      table.insert(reagentsInfo,
-         { name = difficulty, value = (math.floor(chance * 1000 + 0.5) / 10) .. "%" });
+      if (chance > 0) then
+         table.insert(reagentsInfo,
+            { name = difficulty, value = (math.floor(chance * 1000 + 0.5) / 10) .. "%" });
+      end
    end
 
    local function calculateChancesToReachDifficulty(difficulty,
@@ -192,13 +194,6 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
       inspirationSkillBonus = bonusStats["Inspiration"].bonusSkill;
    end
    local hiddenSkillBonus = math.floor(baseDifficulty * 0.05);
-   --name/change
-   --[[ local ilvlModifiers = { { name = "", change = 0 }, }
-   local binaryModifiers = {};
-   local inspirationModifier = false;]]
-   for _, ilvlModifier in ipairs(ilvlModifiers) do
-      local name = ilvlModifier.name;
-      local difficulty = baseDifficulty + ilvlModifier.change;
    for mod = #ilvlModifiers, 1, -1 do
       for x, skill in ipairs({ t2SkillFromMaterials, t3SkillFromMaterials }) do
          local ilvlModifier = ilvlModifiers[mod];
