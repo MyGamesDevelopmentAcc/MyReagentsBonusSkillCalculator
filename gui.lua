@@ -69,25 +69,30 @@ do
                     end,
                 },
                 {
-                    id = "Optional",
-                    name = "optional",
+                    id = "embellishment",
+                    name = "embel",
                     width = 40,
 
                     textureDisplayFunction = nil,
                     displayFunction = function(cellData)
-                        if (cellData.itemID or cellData.name or cellData.value) then return; end
-                        local binaryModifiers = cellData.binaryModifiers;
-                        local print = "";
-                        for _, binaryModifier in ipairs(binaryModifiers) do
-                            print = print .. (binaryModifier.used and "x" or "_")
-                        end
-
-                        return print --cellData.embellishment and "x" or ""
+                        return cellData and "x" or ""
                     end,
                     sortFunction = function(a, b)
-                        return a.embellishment and not b.embellishment
+                        return a and not b
                     end,
                 }, {
+                id = "missive",
+                name = "miss",
+                width = 40,
+
+                textureDisplayFunction = nil,
+                displayFunction = function(cellData)
+                    return cellData and "x" or ""
+                end,
+                sortFunction = function(a, b)
+                    return a and not b
+                end,
+            }, {
                 id = "illustrousInsightUsed",
                 name = "illust",
                 width = 40,
@@ -129,13 +134,27 @@ end
 function self:DisplayData(toDisplay)
     list:RemoveAll()
     for i = 1, #toDisplay, 1 do
-        list:AddData({ toDisplay[i], toDisplay[i], toDisplay[i], toDisplay[i], toDisplay[i], toDisplay[i], toDisplay[i] });
+        local embelishment = false;
+        for _, binaryModifier in ipairs(toDisplay[i].binaryModifiers) do
+            if (binaryModifier.name =="E" and binaryModifier.used) then embelishment = true;
+            end
+        end
+        local missive = false;
+        for _, binaryModifier in ipairs(toDisplay[i].binaryModifiers) do
+            if (binaryModifier.name =="M" and binaryModifier.used) then missive = true;
+            end
+        end
+
+        list:AddData({ toDisplay[i], toDisplay[i], embelishment, missive, toDisplay[i], toDisplay[i], toDisplay[i] });
         list:Sort(1, function(a, b)
             return a.tier < b.tier
         end)
-        -- list:Sort(1, function(a, b)
-        --     return a.embellishment and not b.embellishment
-        -- end)
+        list:Sort(3, function(a, b)
+            return a and not b
+        end)
+        list:Sort(4, function(a, b)
+            return a and not b
+        end)
         list:Sort(6, function(a, b)
             return a.chance > b.chance
         end)

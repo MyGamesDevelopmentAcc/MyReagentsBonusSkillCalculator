@@ -41,7 +41,7 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    local inspirationBonusChances = 0
    local inspirationSkillBonus = 0
    if (bonusStats["Inspiration"]) then
-      inspirationBonusChances = (bonusStats["Inspiration"].ratingPct + 2) / 100 -- added 2% from using sanguine
+      inspirationBonusChances = (bonusStats["Inspiration"].ratingPct + 2) / 100 -- added 2% from using https://www.wowhead.com/item=191501/sagacious-incense
       inspirationSkillBonus = bonusStats["Inspiration"].bonusSkill;
    end
    local hiddenSkillBonus = math.floor(baseDifficulty * 0.05);
