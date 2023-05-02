@@ -5,166 +5,49 @@ local self = AddonNS.main
 function self:OnRecipeSelected(recipeInfo, recipeList)
    local recipeID = recipeInfo.recipeID;
 
-   local recipeSchematic = C_TradeSkillUI.GetRecipeSchematic(recipeID, false);
-   local recipeReagents = {}
-   local repo = {
-      [111] = "Infuse with Power",
-      [126] = "Infuse with Power",
-      [180] = "Add Embellishment",
-      [123] = "Add Embellishment",
-      [125] = "Customize Secondary Stats",
-      [227] = "Customize Secondary Stats",
-      [184] = "Chain Oil",
-      [189] = "Empower with Training Matrix",
-      [116] = "Empower with Training Matrix",
-      [185] = "Curing Agent",
-      [93] = "Illustrous Insight",
-      [92] = "Lesser Illustrous Insight",
-   };
-   local modifiers = {
-      ["Add Embellishment"] = 25,
-      ["Customize Secondary Stats"] = 15,
-   }
-   local ilvlModifiers = { { name = "", change = 0 }, }
-   local binaryModifiers = {};
-   local inspirationModifier = false;
-   local illustrousInsight = false;
 
-   local function updateModifiers(id) 
-      if (id == 111 or id == 126) then ---  "Infuse with Power"
-         ilvlModifiers = { { name = "391", change = 0 }, { name = "437", change = 30 }, { name = "447", change = 50 } }
-      elseif (id == 189) then          --"Empower with Training Matrix"
-         ilvlModifiers = { { name = "343", change = 0 }, { name = "356", change = 40 }, { name = "369", change = 60 },
-            { name = "382", change = 140 }, { name = "395", change = 150 }, { name = "408", change = 160 } }
-      elseif (id == 116) then ---"Empower with Training Matrix"
-         ilvlModifiers = { { name = "316", change = 0 }, { name = "343", change = 20 }, { name = "356", change = 40 },
-            { name = "369", change = 60 }, { name = "382", change = 140 }, { name = "395", change = 150 }, { name = "408", change = 160 }  }
-      elseif (id == 92 or id == 93) then                    ---(Lesser) Illustrous Insight
-         illustrousInsight = true;
-      elseif (repo[id] == "Add Embellishment") then         -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
-         table.insert(binaryModifiers, { name = "E", change = 25 })
-      elseif (repo[id] == "Customize Secondary Stats") then -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
-         table.insert(binaryModifiers, { name = "M", change = 15 })
-      elseif (repo[id] == "Chain Oil") then                 -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
-         inspirationModifier = true;
-      end
-   end
-
-   for i, v in ipairs(recipeSchematic.reagentSlotSchematics) do
-      if (v.reagentType == 1 and #v.reagents > 1) then -- basic reagent
-         local reagents = {}
-         table.insert(recipeReagents, reagents)
-         for n, reagent in ipairs(v.reagents) do
-            table.insert(reagents,
-               {
-                  name = v.slotInfo.slotText .. " Q" .. n,
-                  itemID = reagent.itemID,
-                  dataSlotIndex = v.dataSlotIndex,
-                  quantity = v.quantityRequired
-               })
-         end
-      elseif (v.reagentType == 2) then --optional
-         -- if not (repo[v.slotInfo.mcrSlotID]) then
-         updateModifiers(v.slotInfo.mcrSlotID)
-         print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-          print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         --end
-      elseif (v.reagentType == 0) then --finishing
-         -- if not (repo[v.slotInfo.mcrSlotID]) then
-         updateModifiers(v.slotInfo.mcrSlotID)
-         print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-      end
-   end
+   local ilvlModifiers, binaryModifiers, illustrousInsight = AddonNS.recipeUtils.getRecipeSlotInfo(recipeInfo)
 
 
    local opInfo = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, {})
    if (not opInfo) then return end
-   local baseBonusSkill = opInfo.bonusSkill;
+
    local baseSkill = opInfo.baseSkill;
    local baseDifficulty = opInfo.baseDifficulty
-   local bonusStats = {};
-   for _, v in ipairs(opInfo.bonusStats) do
-      bonusStats[v.bonusStatName] = { ratingPct = v.ratingPct }
-      if (v.bonusStatName == "Inspiration") then
-         local _, _, bonusSkill = strfind(v.ratingDescription, " (%d+) ")
-         bonusStats[v.bonusStatName]["bonusSkill"] = tonumber(bonusSkill);
-      end
-   end
-   local reagentsInfo = {};
-   for i = 1, #recipeReagents, 1 do
-      for i2 = 1, #recipeReagents[i], 1 do
-         local craftingReagents = {}
-         table.insert(craftingReagents, recipeReagents[i][i2])
-         for i3 = 1, #recipeReagents, 1 do
-            if (i3 ~= i) then
-               table.insert(craftingReagents, recipeReagents[i3][1])
-            end
-         end
-         local opInfo = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents)
-         local addedBonus = opInfo.bonusSkill - baseBonusSkill
-         local reagentInfo = {
-            qualityTier = i2,
-            addedValue = addedBonus,
-            bonusSkill = opInfo.bonusSkill,
-            itemID = recipeReagents[i][i2].itemID
-         }
-         table.insert(reagentsInfo, reagentInfo);
-      end
+   local bonusStats = AddonNS.recipeUtils.getBonusStats(opInfo);
+
+   local toDisplay = {};
+   local function addToDisplay(ilvl, tier, embellishment, missive, illustrousInsight, chance)
+      table.insert(toDisplay, {
+         ilvl = ilvl,
+         tier = tier,
+         embellishment = embellishment,
+         missive = missive,
+         illustrousInsight = illustrousInsight,
+         chance = chance
+      });
    end
 
-   local craftingReagents = {}
-   for i = 1, #recipeReagents, 1 do
-      table.insert(craftingReagents, recipeReagents[i][#recipeReagents[i] > 1 and 3 or 1])
-   end
-   local t3BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents).bonusSkill;
-   local t3SkillFromMaterials = baseSkill + t3BonusFromMaterials;
-
-   craftingReagents = {}
-   for i = 1, #recipeReagents, 1 do
-      table.insert(craftingReagents, recipeReagents[i][#recipeReagents[i] > 1 and 2 or 1])
-   end
-   local t2BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents).bonusSkill;
-   local t2SkillFromMaterials = baseSkill + t2BonusFromMaterials;
+   local t2BonusSkillFromMaterials, t3BonusSkillFromMaterials = AddonNS.recipeUtils.getBonusSkillFromMaterials(
+      recipeInfo)
 
 
-   local addedSkillDifficulties = { 0,
-      40,
-      70,
-      90,
-      0,
-      15,
-      20,
-      25,
-      30,
-      35,
-      40,
-      45,
-      50,
-      55,
-      60,
-      65,
-      70,
-      75,
-      80,
-      85,
-      90,
-      95,
-      100,
-      105,
-      110 }
+
    local function addChancesForSkillDifficulty(difficulty, chance)
       if (chance > 0) then
-         table.insert(reagentsInfo,
+         table.insert(toDisplay,
             { name = difficulty, value = (math.floor(chance * 1000 + 0.5) / 10) .. "%" });
       end
    end
 
    local function calculateChancesToReachDifficulty(difficulty,
-                                                    skill,
+                                                    baseSkill,
+                                                    bonusSkillFromMaterials,
+                                                    illustrousInsight,
                                                     hiddenSkillBonus,
                                                     inspirationSkillBonus,
                                                     inspirationBonusChances)
+      local skill = baseSkill + bonusSkillFromMaterials + (illustrousInsight and 30 or 0);
       local hiddenSkillBonusRollPossibilities = hiddenSkillBonus +
           1 -- if hidden skill is 10, then there are 11 possible options from 0, 1,2..,10, hence this is what has to be used to calculate chances
 
@@ -195,7 +78,7 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    end
    local hiddenSkillBonus = math.floor(baseDifficulty * 0.05);
    for mod = #ilvlModifiers, 1, -1 do
-      for x, skill in ipairs({ t2SkillFromMaterials, t3SkillFromMaterials }) do
+      for x, bonusSkillFromMaterials in ipairs({t2BonusSkillFromMaterials, t3BonusSkillFromMaterials }) do
          local ilvlModifier = ilvlModifiers[mod];
          local name = ilvlModifier.name;
          local difficulty = baseDifficulty + ilvlModifier.change;
@@ -217,7 +100,9 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
             binaryModifiersName = binaryModifiersName .. "]";
          end
          local procChance = calculateChancesToReachDifficulty(
-            difficulty + binaryModifiersBonusDifficulty, skill,
+            difficulty + binaryModifiersBonusDifficulty, baseSkill,
+            bonusSkillFromMaterials,
+            illustrousInsight,
             hiddenSkillBonus,
             inspirationSkillBonus,
             inspirationBonusChances
@@ -226,7 +111,9 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
          addChancesForSkillDifficulty(name .. binaryModifiersName, procChance)
          if (procChance < 1 and illustrousInsight) then
             procChance = calculateChancesToReachDifficulty(
-               difficulty + binaryModifiersBonusDifficulty, skill + 30,
+               difficulty + binaryModifiersBonusDifficulty, baseSkill,
+               bonusSkillFromMaterials,
+               illustrousInsight,
                hiddenSkillBonus,
                inspirationSkillBonus,
                inspirationBonusChances
@@ -234,7 +121,9 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
             addChancesForSkillDifficulty(name .. binaryModifiersName .. "+i", procChance)
             if (procChance < 1) then
                procChance = calculateChancesToReachDifficulty(
-                  difficulty, skill,
+                  difficulty, baseSkill,
+                  bonusSkillFromMaterials,
+                  illustrousInsight,
                   hiddenSkillBonus,
                   inspirationSkillBonus,
                   inspirationBonusChances
@@ -242,7 +131,9 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
                addChancesForSkillDifficulty(name, procChance)
                if (procChance < 1) then
                   procChance = calculateChancesToReachDifficulty(
-                     difficulty, skill + 30,
+                     difficulty, baseSkill,
+                     bonusSkillFromMaterials,
+                     illustrousInsight,
                      hiddenSkillBonus,
                      inspirationSkillBonus,
                      inspirationBonusChances
@@ -253,11 +144,38 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
          end
       end
    end
+   local addedSkillDifficulties = { 0,
+      40,
+      70,
+      90,
+      0,
+      15,
+      20,
+      25,
+      30,
+      35,
+      40,
+      45,
+      50,
+      55,
+      60,
+      65,
+      70,
+      75,
+      80,
+      85,
+      90,
+      95,
+      100,
+      105,
+      110 }
    for _, addedSkillDifficulty in ipairs(addedSkillDifficulties) do
       -- print("diff", addedSkillDifficulty)
       local difficulty = addedSkillDifficulty + baseDifficulty;
       addChancesForSkillDifficulty(addedSkillDifficulty, calculateChancesToReachDifficulty(
-         difficulty, t3SkillFromMaterials,
+         difficulty, baseSkill,
+         t3BonusSkillFromMaterials,
+         false,
          hiddenSkillBonus,
          inspirationSkillBonus,
          inspirationBonusChances
@@ -265,7 +183,7 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    end
 
    AddonNS.gui.mainFrame:Show();
-   AddonNS.gui:DisplayData(reagentsInfo);
+   AddonNS.gui:DisplayData(toDisplay);
 end
 
 function self:SelectRecipe(recipeInfo)

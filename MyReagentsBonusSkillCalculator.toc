@@ -4,6 +4,7 @@
 ### SavedVariables: 
 ## Dependencies: MyLibrary_GUI
 ../MyLibrary_Common/common.xml
+recipeUtils.lua
 main.lua
 gui.lua
 
