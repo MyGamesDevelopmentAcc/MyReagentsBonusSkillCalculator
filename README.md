@@ -3,7 +3,7 @@ This addon adds a table next to crafting window which shows your proc chance for
 When calculating usage of optional reagents it takes into account only the highest quality added difficulty.
 
 I have used/tested it mostly on my LW. If something doesn't work feel free to fix it :)
-
+![sample image](/sample.png)
 ## Sagacious Incense!
 *All the percentage assume you will use Sagacious Incense which increases inspiration chance by 2%.*
 https://www.wowhead.com/item=191501/sagacious-incense
