@@ -17,13 +17,12 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    local bonusStats = AddonNS.recipeUtils.getBonusStats(opInfo);
 
    local toDisplay = {};
-   local function addToDisplay(ilvl, tier, binaryModifiersApplied, illustrousInsightUsed, chance)
+   local function addToDisplay(ilvl, tier, binaryModifiers, illustrousInsightUsed, chance)
       -- if (chance > 0) then
       table.insert(toDisplay, {
          ilvl = ilvl,
          tier = tier,
-         embellishment = binaryModifiersApplied,
-         missive = binaryModifiersApplied,
+         binaryModifiers = binaryModifiers,
          illustrousInsightUsed = illustrousInsightUsed,
          chance = chance
       });
@@ -47,68 +46,50 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    end
    local hiddenSkillBonus = math.floor(baseDifficulty * 0.05);
 
+
+   local binaryModifiersUsedGroups = {};
+   --if #binaryModifiers > 0 then
+   local combinations = 2 ^ #binaryModifiers;
+   for a = 0, combinations - 1, 1 do
+      local binaryModifiersUsedGroup = {};
+      local b = 1;
+      local modSelector = 1;
+      while (b <= combinations - 1) do
+         --print(modSelector,b,combinations,bit.band(b, a))
+         table.insert(binaryModifiersUsedGroup,
+            { name = binaryModifiers[modSelector].name, change = binaryModifiers[modSelector].change,
+               used = bit.band(b, a) > 0 });
+
+         modSelector = modSelector + 1;
+         b = b * 2;
+      end
+
+      table.insert(binaryModifiersUsedGroups, binaryModifiersUsedGroup)
+   end
+
    for mod = #ilvlModifiers, 1, -1 do
+      local ilvlModifier = ilvlModifiers[mod];
       for tier, bonusSkillFromMaterials in pairs({ [2] = t2BonusSkillFromMaterials, [3] = t3BonusSkillFromMaterials }) do
-         local ilvlModifier = ilvlModifiers[mod];
-         local name = ilvlModifier.name;
          local difficulty = baseDifficulty + ilvlModifier.change;
-         --name = name .. skill .." - "
 
-         name = name .. "[t" .. tier .. "]"
+         -------------------
 
-         local binaryModifiersBonusDifficulty = 0;
-         local binaryModifiersName = ""
-         local binaryModifiersApplied = false;
-         if #binaryModifiers > 0 then
-            binaryModifiersName = binaryModifiersName .. "[";
-            for i = 1, #binaryModifiers, 1 do
-               binaryModifiersBonusDifficulty = binaryModifiersBonusDifficulty + binaryModifiers[i].change;
-               binaryModifiersName = binaryModifiersName .. binaryModifiers[i].name;
-               if i ~= #binaryModifiers then binaryModifiersName = binaryModifiersName .. "/"; end
-               binaryModifiersApplied = true;
+         for _, binaryModifiersUsedGroup in ipairs(binaryModifiersUsedGroups) do
+            for _, binaryModifiersUsed in ipairs(binaryModifiersUsedGroup) do
+               difficulty = difficulty + (binaryModifiersUsed.used and binaryModifiersUsed.change or 0);
             end
-            binaryModifiersName = binaryModifiersName .. "]";
-         end
-         local procChance = calculateChancesToReachDifficulty(
-            difficulty + binaryModifiersBonusDifficulty, baseSkill,
-            bonusSkillFromMaterials,
-            false,
-            hiddenSkillBonus,
-            inspirationSkillBonus,
-            inspirationBonusChances
-         )
-         addToDisplay(ilvlModifier.name, tier, true, false, procChance)
-         if (procChance < 1 and illustrousInsight) then
-            procChance = calculateChancesToReachDifficulty(
-               difficulty + binaryModifiersBonusDifficulty, baseSkill,
-               bonusSkillFromMaterials,
-               true,
-               hiddenSkillBonus,
-               inspirationSkillBonus,
-               inspirationBonusChances
-            )
-            addToDisplay(ilvlModifier.name, tier, true, true, procChance)
-            if (procChance < 1) then
-               procChance = calculateChancesToReachDifficulty(
+
+            for _, illustrousInsightUsed in ipairs({ true, false }) do
+               local procChance = calculateChancesToReachDifficulty(
                   difficulty, baseSkill,
                   bonusSkillFromMaterials,
-                  false,
+                  illustrousInsightUsed,
                   hiddenSkillBonus,
                   inspirationSkillBonus,
                   inspirationBonusChances
                )
-               addToDisplay(ilvlModifier.name, tier, false, false, procChance)
-               if (procChance < 1) then
-                  procChance = calculateChancesToReachDifficulty(
-                     difficulty, baseSkill,
-                     bonusSkillFromMaterials,
-                     true,
-                     hiddenSkillBonus,
-                     inspirationSkillBonus,
-                     inspirationBonusChances
-                  )
-                  addToDisplay(ilvlModifier.name, tier, false, true, procChance)
-               end
+
+               addToDisplay(ilvlModifier.name, tier, binaryModifiersUsedGroup, illustrousInsightUsed, procChance)
             end
          end
       end

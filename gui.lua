@@ -69,32 +69,25 @@ do
                     end,
                 },
                 {
-                    id = "embellishment",
-                    name = "embel",
+                    id = "Optional",
+                    name = "optional",
                     width = 40,
 
                     textureDisplayFunction = nil,
                     displayFunction = function(cellData)
                         if (cellData.itemID or cellData.name or cellData.value) then return; end
-                        return cellData.embellishment and "x" or ""
+                        local binaryModifiers = cellData.binaryModifiers;
+                        local print = "";
+                        for _, binaryModifier in ipairs(binaryModifiers) do
+                            print = print .. (binaryModifier.used and "x" or "_")
+                        end
+
+                        return print --cellData.embellishment and "x" or ""
                     end,
                     sortFunction = function(a, b)
                         return a.embellishment and not b.embellishment
                     end,
                 }, {
-                id = "missive",
-                name = "miss",
-                width = 40,
-
-                textureDisplayFunction = nil,
-                displayFunction = function(cellData)
-                    if (cellData.itemID or cellData.name or cellData.value) then return; end
-                    return cellData.missive and "x" or ""
-                end,
-                sortFunction = function(a, b)
-                    return a.missive and not b.missive
-                end,
-            }, {
                 id = "illustrousInsightUsed",
                 name = "illust",
                 width = 40,
@@ -140,9 +133,9 @@ function self:DisplayData(toDisplay)
         list:Sort(1, function(a, b)
             return a.tier < b.tier
         end)
-        list:Sort(1, function(a, b)
-            return a.embellishment and not b.embellishment
-        end)
+        -- list:Sort(1, function(a, b)
+        --     return a.embellishment and not b.embellishment
+        -- end)
         list:Sort(6, function(a, b)
             return a.chance > b.chance
         end)

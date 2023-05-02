@@ -109,11 +109,11 @@ end
 function self.calculateChancesToReachDifficulty(difficulty,
                                                 baseSkill,
                                                 bonusSkillFromMaterials,
-                                                illustrousInsight,
+                                                illustrousInsightUsed,
                                                 hiddenSkillBonus,
                                                 inspirationSkillBonus,
                                                 inspirationBonusChances)
-   local skill = baseSkill + bonusSkillFromMaterials + (illustrousInsight and 30 or 0);
+   local skill = baseSkill + bonusSkillFromMaterials + (illustrousInsightUsed and 30 or 0);
    local hiddenSkillBonusRollPossibilities = hiddenSkillBonus +
        1 -- if hidden skill is 10, then there are 11 possible options from 0, 1,2..,10, hence this is what has to be used to calculate chances
    if (difficulty <= skill) then
