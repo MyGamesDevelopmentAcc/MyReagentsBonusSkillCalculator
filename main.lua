@@ -40,36 +40,8 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
       end
    end
 
-   local function calculateChancesToReachDifficulty(difficulty,
-                                                    baseSkill,
-                                                    bonusSkillFromMaterials,
-                                                    illustrousInsight,
-                                                    hiddenSkillBonus,
-                                                    inspirationSkillBonus,
-                                                    inspirationBonusChances)
-      local skill = baseSkill + bonusSkillFromMaterials + (illustrousInsight and 30 or 0);
-      local hiddenSkillBonusRollPossibilities = hiddenSkillBonus +
-          1 -- if hidden skill is 10, then there are 11 possible options from 0, 1,2..,10, hence this is what has to be used to calculate chances
+   local calculateChancesToReachDifficulty = AddonNS.recipeUtils.calculateChancesToReachDifficulty;
 
-      if (difficulty <= skill) then
-         return 1
-      else
-         local skillLacking = difficulty - skill;
-         -- chances for 4 out of 10, is 6/11, 0 of 10 it is 11/11, for 10 out of 10 it is 1/11
-         if (hiddenSkillBonus >= skillLacking) then
-            local extraChance = (hiddenSkillBonusRollPossibilities - skillLacking) / hiddenSkillBonusRollPossibilities;
-            return ((1 - (1 - inspirationBonusChances) * (1 - extraChance)))
-         elseif (inspirationSkillBonus >= skillLacking) then
-            return inspirationBonusChances
-         elseif (inspirationSkillBonus + hiddenSkillBonus >= skillLacking) then
-            local diff = skillLacking - inspirationSkillBonus;
-            local extraChance = (hiddenSkillBonusRollPossibilities - diff) / hiddenSkillBonusRollPossibilities
-            return (inspirationBonusChances) * (extraChance)
-         else
-            return 0;
-         end
-      end
-   end
    local inspirationBonusChances = 0
    local inspirationSkillBonus = 0
    if (bonusStats["Inspiration"]) then
@@ -78,16 +50,14 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    end
    local hiddenSkillBonus = math.floor(baseDifficulty * 0.05);
    for mod = #ilvlModifiers, 1, -1 do
-      for x, bonusSkillFromMaterials in ipairs({t2BonusSkillFromMaterials, t3BonusSkillFromMaterials }) do
+      for tier, bonusSkillFromMaterials in pairs({ [2] = t2BonusSkillFromMaterials, [3] = t3BonusSkillFromMaterials }) do
          local ilvlModifier = ilvlModifiers[mod];
          local name = ilvlModifier.name;
          local difficulty = baseDifficulty + ilvlModifier.change;
          --name = name .. skill .." - "
-         if x == 1 then
-            name = name .. "[t2]"
-         else
-            name = name .. "[t3]"
-         end
+
+         name = name .. "[t" .. tier .. "]"
+
          local binaryModifiersBonusDifficulty = 0;
          local binaryModifiersName = ""
          if #binaryModifiers > 0 then
