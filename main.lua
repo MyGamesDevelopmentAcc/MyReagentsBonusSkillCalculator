@@ -144,43 +144,7 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
          end
       end
    end
-   local addedSkillDifficulties = { 0,
-      40,
-      70,
-      90,
-      0,
-      15,
-      20,
-      25,
-      30,
-      35,
-      40,
-      45,
-      50,
-      55,
-      60,
-      65,
-      70,
-      75,
-      80,
-      85,
-      90,
-      95,
-      100,
-      105,
-      110 }
-   for _, addedSkillDifficulty in ipairs(addedSkillDifficulties) do
-      -- print("diff", addedSkillDifficulty)
-      local difficulty = addedSkillDifficulty + baseDifficulty;
-      addChancesForSkillDifficulty(addedSkillDifficulty, calculateChancesToReachDifficulty(
-         difficulty, baseSkill,
-         t3BonusSkillFromMaterials,
-         false,
-         hiddenSkillBonus,
-         inspirationSkillBonus,
-         inspirationBonusChances
-      ))
-   end
+
 
    AddonNS.gui.mainFrame:Show();
    AddonNS.gui:DisplayData(toDisplay);
