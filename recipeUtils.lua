@@ -49,14 +49,14 @@ function self.getRecipeSlotInfo(recipeInfo)
       if (v.reagentType == 2) then --optional
          -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
-         print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         -- print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         -- print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
          --end
       elseif (v.reagentType == 0) then --finishing
          -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
-         print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         -- print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         -- print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
       end
    end
    return ilvlModifiers, binaryModifiers, illustrousInsight
