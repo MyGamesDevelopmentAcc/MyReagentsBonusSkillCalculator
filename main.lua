@@ -30,15 +30,15 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    local inspirationModifier = false;
    local illustrousInsight = false;
 
-   local function updateModifiers(id)
+   local function updateModifiers(id) 
       if (id == 111 or id == 126) then ---  "Infuse with Power"
-         ilvlModifiers = { { name = "392", change = 0 }, { name = "405", change = 30 }, { name = "418", change = 50 } }
+         ilvlModifiers = { { name = "391", change = 0 }, { name = "437", change = 30 }, { name = "447", change = 50 } }
       elseif (id == 189) then          --"Empower with Training Matrix"
          ilvlModifiers = { { name = "343", change = 0 }, { name = "356", change = 40 }, { name = "369", change = 60 },
-            { name = "382", change = 150 } }
+            { name = "382", change = 140 }, { name = "395", change = 150 }, { name = "408", change = 160 } }
       elseif (id == 116) then ---"Empower with Training Matrix"
          ilvlModifiers = { { name = "316", change = 0 }, { name = "343", change = 20 }, { name = "356", change = 40 },
-            { name = "369", change = 60 }, { name = "382", change = 150 } }
+            { name = "369", change = 60 }, { name = "382", change = 140 }, { name = "395", change = 150 }, { name = "408", change = 160 }  }
       elseif (id == 92 or id == 93) then                    ---(Lesser) Illustrous Insight
          illustrousInsight = true;
       elseif (repo[id] == "Add Embellishment") then         -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
@@ -66,14 +66,14 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
       elseif (v.reagentType == 2) then --optional
          -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
-         -- print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         --  print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+          print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
          --end
       elseif (v.reagentType == 0) then --finishing
          -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
-         -- print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         -- print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
       end
    end
 
@@ -222,6 +222,7 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
             inspirationSkillBonus,
             inspirationBonusChances
          )
+         print(name .. binaryModifiersName, procChance)
          addChancesForSkillDifficulty(name .. binaryModifiersName, procChance)
          if (procChance < 1 and illustrousInsight) then
             procChance = calculateChancesToReachDifficulty(

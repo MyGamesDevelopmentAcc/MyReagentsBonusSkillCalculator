@@ -2,8 +2,8 @@
 ## Title: My ReagentsBonusSkillCalculator
 ## DefaultState: Enabled
 ### SavedVariables: 
-## Dependencies: Ace3, MyLibrary_GUI
-common/common.xml
+## Dependencies: MyLibrary_GUI
+../MyLibrary_Common/common.xml
 main.lua
 gui.lua
 
