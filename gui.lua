@@ -54,8 +54,8 @@ do
                     end,
                 },
                 {
-                    id = "tier",
-                    name = "tier",
+                    id = "itier",
+                    name = "itier",
                     width = 40,
 
                     textureDisplayFunction = nil,

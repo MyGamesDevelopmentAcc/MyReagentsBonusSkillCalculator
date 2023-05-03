@@ -46,13 +46,13 @@ function self.getRecipeSlotInfo(recipeInfo)
    end
 
    for i, v in ipairs(reagentSlotSchematics) do
-      if (v.reagentType == 2) then --optional
+      if (v.reagentType == 0) then --optional
          -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
          -- print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
          -- print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
          --end
-      elseif (v.reagentType == 0) then --finishing
+      elseif (v.reagentType == 2) then --finishing
          -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
          -- print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
@@ -75,18 +75,22 @@ function self.getBonusStats(opInfo)
    return bonusStats;
 end
 
-local function getBonusSkillFromMaterials(recipeReagents, recipeID, tier)
-   local craftingReagents = {}
+local function getTierReagents(recipeReagents, tier, finalReagentsList)
+   local finalReagentsList = finalReagentsList or {}
    for i = 1, #recipeReagents, 1 do
-      table.insert(craftingReagents, recipeReagents[i][#recipeReagents[i] > 1 and tier or 1])
+      table.insert(finalReagentsList, recipeReagents[i][#recipeReagents[i] > 1 and tier or 1])
    end
+   return finalReagentsList
+end
+local function getBonusSkillFromMaterials(recipeReagents, recipeID, tier)
+   local craftingReagents = getTierReagents(recipeReagents, tier)
    local t3BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents).bonusSkill;
    return t3BonusFromMaterials;
 end
 
-function self.getBonusSkillFromMaterials(recipeInfo)
+local function getRequireReagents(recipeInfo)
    local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
-   local recipeReagents = {};
+   local requiredReagent = {};
    for i, v in ipairs(reagentSlotSchematics) do
       if (v.reagentType == 1 and #v.reagents > 1) then -- basic reagent
          local reagents = {}
@@ -99,11 +103,86 @@ function self.getBonusSkillFromMaterials(recipeInfo)
                   quantity = v.quantityRequired
                })
          end
-         table.insert(recipeReagents, reagents)
+         table.insert(requiredReagent, reagents)
       end
    end
-   return getBonusSkillFromMaterials(recipeReagents, recipeInfo.recipeID, 2),
-       getBonusSkillFromMaterials(recipeReagents, recipeInfo.recipeID, 3)
+   return requiredReagent
+end
+
+local function getFinishingReagents(recipeInfo)
+   local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
+   local finishingReagents = {};
+   for i, v in ipairs(reagentSlotSchematics) do
+      if (v.reagentType == 2) then --finishing
+         local reagents = {}
+         DevTools_Dump(v)
+         for n, reagent in ipairs(v.reagents) do
+            table.insert(reagents,
+               {
+                  name = v.slotInfo.slotText .. " Q" .. n,
+                  itemID = reagent.itemID,
+                  dataSlotIndex = v.dataSlotIndex,
+                  quantity = v.quantityRequired
+               })
+         end
+         table.insert(finishingReagents, reagents)
+      end
+   end
+   return finishingReagents
+end
+
+local function getInfuseWithPowerReagents(recipeInfo)
+   local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
+
+
+   local infuseWithPowerReagents = {};
+   for i, v in ipairs(reagentSlotSchematics) do
+      if (v.reagentType == 0) then
+         local reagents = {}
+         DevTools_Dump(v)
+         local id = v.slotInfo.mcrSlotID
+         if (id == 111 or id == 126 or id == 189) then
+            local reagent = v.reagents[#v.reagents];
+            table.insert(reagents,
+               {
+                  name = v.slotInfo.slotText,
+                  itemID = reagent.itemID,
+                  dataSlotIndex = v.dataSlotIndex,
+                  quantity = v.quantityRequired
+               })
+         end
+         table.insert(infuseWithPowerReagents, reagents)
+      end
+   end
+   return infuseWithPowerReagents
+end
+
+function self.getHighestTierItemLink(recipeInfo)
+   ----------------
+   local required = getRequireReagents(recipeInfo);
+   local infuseReagents = getInfuseWithPowerReagents(recipeInfo);
+   local craftingReagents = getTierReagents(required, 3)
+   local finishing = getFinishingReagents(recipeInfo)
+   getTierReagents(finishing, 1, craftingReagents);
+   getTierReagents(infuseReagents, 1, craftingReagents);
+
+   --[[ returns
+      CraftingRecipeOutputInfo
+         Field	Type	Description
+         icon	number	
+         hyperlink	string?	
+         itemID	number?	
+   ]]
+   local outputItemInfo = C_TradeSkillUI.GetRecipeOutputItemData(recipeInfo.recipeID, craftingReagents)
+   
+   print(outputItemInfo.hyperlink)
+   return outputItemInfo.hyperlink;
+end
+
+function self.getBonusSkillFromMaterials(recipeInfo)
+   local requiredReagent = getRequireReagents(recipeInfo)
+   return getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 2),
+       getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 3)
 end
 
 function self.calculateChancesToReachDifficulty(difficulty,

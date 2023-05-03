@@ -32,6 +32,8 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    local t2BonusSkillFromMaterials, t3BonusSkillFromMaterials = AddonNS.recipeUtils.getBonusSkillFromMaterials(
       recipeInfo)
 
+-- currently this is just for printing so I could easily copy paste
+   AddonNS.recipeUtils.getHighestTierItemLink(recipeInfo)
 
 
 
@@ -41,7 +43,8 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    local inspirationBonusChances = 0
    local inspirationSkillBonus = 0
    if (bonusStats["Inspiration"]) then
-      inspirationBonusChances = (bonusStats["Inspiration"].ratingPct + 2) / 100 -- added 2% from using https://www.wowhead.com/item=191501/sagacious-incense
+      inspirationBonusChances = (bonusStats["Inspiration"].ratingPct + 2) /
+          100 -- added 2% from using https://www.wowhead.com/item=191501/sagacious-incense
       inspirationSkillBonus = bonusStats["Inspiration"].bonusSkill;
    end
    local hiddenSkillBonus = math.floor(baseDifficulty * 0.05);
@@ -57,8 +60,11 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
       while (b <= combinations - 1) do
          --print(modSelector,b,combinations,bit.band(b, a))
          table.insert(binaryModifiersUsedGroup,
-            { name = binaryModifiers[modSelector].name, change = binaryModifiers[modSelector].change,
-               used = bit.band(b, a) > 0 });
+            {
+               name = binaryModifiers[modSelector].name,
+               change = binaryModifiers[modSelector].change,
+               used = bit.band(b, a) > 0
+            });
 
          modSelector = modSelector + 1;
          b = b * 2;

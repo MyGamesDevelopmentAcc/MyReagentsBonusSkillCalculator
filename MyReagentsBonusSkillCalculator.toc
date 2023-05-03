@@ -3,7 +3,6 @@
 ## DefaultState: Enabled
 ## Dependencies: MyLibrary_GUI, MyLibrary_Common
 ## Version: 10.1.0-0.1
-../MyLibrary_Common/common.xml
 recipeUtils.lua
 main.lua
 gui.lua
