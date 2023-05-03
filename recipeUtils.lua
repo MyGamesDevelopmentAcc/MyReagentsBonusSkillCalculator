@@ -115,7 +115,6 @@ local function getFinishingReagents(recipeInfo)
    for i, v in ipairs(reagentSlotSchematics) do
       if (v.reagentType == 2) then --finishing
          local reagents = {}
-         DevTools_Dump(v)
          for n, reagent in ipairs(v.reagents) do
             table.insert(reagents,
                {
@@ -139,7 +138,6 @@ local function getInfuseWithPowerReagents(recipeInfo)
    for i, v in ipairs(reagentSlotSchematics) do
       if (v.reagentType == 0) then
          local reagents = {}
-         DevTools_Dump(v)
          local id = v.slotInfo.mcrSlotID
          if (id == 111 or id == 126 or id == 189) then
             local reagent = v.reagents[#v.reagents];
