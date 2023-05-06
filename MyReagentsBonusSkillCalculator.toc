@@ -2,7 +2,7 @@
 ## Title: |CFFFF2459My|r ReagentsBonusSkillCalculator
 ## DefaultState: Enabled
 ## Dependencies: MyLibrary_GUI, MyLibrary_Common
-## Version: 10.1.0-0.1
+## Version: 10.1.0-0.2
 recipeUtils.lua
 main.lua
 gui.lua
