@@ -17,14 +17,16 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    local bonusStats = AddonNS.recipeUtils.getBonusStats(opInfo);
 
    local toDisplay = {};
-   local function addToDisplay(ilvl, tier, binaryModifiers, illustrousInsightUsed, chance)
+   local function addToDisplay(ilvl, tier, binaryModifiers, illustrousInsightUsed, chance, difficulty, skill)
       -- if (chance > 0) then
       table.insert(toDisplay, {
          ilvl = ilvl,
          tier = tier,
          binaryModifiers = binaryModifiers,
          illustrousInsightUsed = illustrousInsightUsed,
-         chance = chance
+         chance = chance,
+         difficulty = difficulty,
+         skill = skill
       });
       -- end
    end
@@ -32,9 +34,8 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    local t2BonusSkillFromMaterials, t3BonusSkillFromMaterials = AddonNS.recipeUtils.getBonusSkillFromMaterials(
       recipeInfo)
 
--- currently this is just for printing so I could easily copy paste
-   AddonNS.recipeUtils.getHighestTierItemLink(recipeInfo)
-
+   -- currently this is just for printing so I could easily copy paste
+   --print(AddonNS.recipeUtils.getHighestTierItemLink(recipeInfo))
 
 
 
@@ -76,17 +77,18 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    for mod = #ilvlModifiers, 1, -1 do
       local ilvlModifier = ilvlModifiers[mod];
       for tier, bonusSkillFromMaterials in pairs({ [2] = t2BonusSkillFromMaterials, [3] = t3BonusSkillFromMaterials }) do
-         local difficulty = baseDifficulty + ilvlModifier.change;
+         local baseDifficultyWithIlvlModifier = baseDifficulty + ilvlModifier.change;
 
          -------------------
 
          for _, binaryModifiersUsedGroup in ipairs(binaryModifiersUsedGroups) do
+            local difficulty = baseDifficultyWithIlvlModifier;
             for _, binaryModifiersUsed in ipairs(binaryModifiersUsedGroup) do
                difficulty = difficulty + (binaryModifiersUsed.used and binaryModifiersUsed.change or 0);
             end
 
             for _, illustrousInsightUsed in ipairs({ true, false }) do
-               local procChance = calculateChancesToReachDifficulty(
+               local procChance, difficulty, skill = calculateChancesToReachDifficulty(
                   difficulty, baseSkill,
                   bonusSkillFromMaterials,
                   illustrousInsightUsed,
@@ -95,7 +97,8 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
                   inspirationBonusChances
                )
 
-               addToDisplay(ilvlModifier.name, tier, binaryModifiersUsedGroup, illustrousInsightUsed, procChance)
+               addToDisplay(ilvlModifier.name, tier, binaryModifiersUsedGroup, illustrousInsightUsed, procChance,
+                  difficulty, skill)
             end
          end
       end

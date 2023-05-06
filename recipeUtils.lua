@@ -26,7 +26,7 @@ function self.getRecipeSlotInfo(recipeInfo)
 
    local function updateModifiers(id)
       if (id == 111 or id == 126) then ---  "Infuse with Power"
-         ilvlModifiers = { { name = "391", change = 0 }, { name = "437", change = 30 }, { name = "447", change = 50 } }
+         ilvlModifiers = { { name = "424", change = 0 }, { name = "437", change = 30 }, { name = "447", change = 50 } }
       elseif (id == 189) then          --"Empower with Training Matrix"
          ilvlModifiers = { { name = "343", change = 0 }, { name = "356", change = 40 }, { name = "369", change = 60 },
             { name = "382", change = 140 }, { name = "395", change = 150 }, { name = "408", change = 160 } }
@@ -173,7 +173,7 @@ function self.getHighestTierItemLink(recipeInfo)
    ]]
    local outputItemInfo = C_TradeSkillUI.GetRecipeOutputItemData(recipeInfo.recipeID, craftingReagents)
    
-   print(outputItemInfo.hyperlink)
+   
    return outputItemInfo.hyperlink;
 end
 
@@ -194,21 +194,21 @@ function self.calculateChancesToReachDifficulty(difficulty,
    local hiddenSkillBonusRollPossibilities = hiddenSkillBonus +
        1 -- if hidden skill is 10, then there are 11 possible options from 0, 1,2..,10, hence this is what has to be used to calculate chances
    if (difficulty <= skill) then
-      return 1
+      return 1, difficulty, skill
    else
       local skillLacking = difficulty - skill;
       -- chances for 4 out of 10, is 6/11, 0 of 10 it is 11/11, for 10 out of 10 it is 1/11
       if (hiddenSkillBonus >= skillLacking) then
          local extraChance = (hiddenSkillBonusRollPossibilities - skillLacking) / hiddenSkillBonusRollPossibilities;
-         return ((1 - (1 - inspirationBonusChances) * (1 - extraChance)))
+         return ((1 - (1 - inspirationBonusChances) * (1 - extraChance))), difficulty, skill
       elseif (inspirationSkillBonus >= skillLacking) then
-         return inspirationBonusChances
+         return inspirationBonusChances, difficulty, skill
       elseif (inspirationSkillBonus + hiddenSkillBonus >= skillLacking) then
          local diff = skillLacking - inspirationSkillBonus;
          local extraChance = (hiddenSkillBonusRollPossibilities - diff) / hiddenSkillBonusRollPossibilities
-         return (inspirationBonusChances) * (extraChance)
+         return (inspirationBonusChances) * (extraChance), difficulty, skill
       else
-         return 0;
+         return 0, difficulty, skill;
       end
    end
 end
