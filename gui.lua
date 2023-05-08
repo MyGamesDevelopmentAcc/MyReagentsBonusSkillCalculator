@@ -180,8 +180,12 @@ function self:DisplayData(toDisplay)
         end
 
         list:AddData({ toDisplay[i], toDisplay[i], embelishment, missive, toDisplay[i], toDisplay[i], toDisplay[i] , toDisplay[i]});
+        -- tier, illu, embel, miss, %, ilvl
         list:Sort(1, function(a, b)
             return a.tier < b.tier
+        end)
+        list:Sort(1, function(a, b)
+            return not a.illustrousInsightUsed and  b.illustrousInsightUsed
         end)
         list:Sort(3, function(a, b)
             return a and not b
