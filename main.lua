@@ -2,7 +2,7 @@ local addonName, AddonNS = ...
 AddonNS.main = {};
 local self = AddonNS.main
 
-function self:OnRecipeSelected(recipeInfo, recipeList)
+function self:OnRecipeSelected(recipeInfo)
    local recipeID = recipeInfo.recipeID;
 
 
@@ -107,18 +107,9 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    AddonNS.gui:DisplayData(toDisplay, AddonNS.recipeUtils.getHighestTierItemLink(recipeInfo));
 end
 
-function self:SelectRecipe(recipeInfo)
-   -- The selected recipe from the list will be the first level.
-   -- Always forward the highest learned recipe to the schematic.
-   local highestRecipe = Professions.GetHighestLearnedRecipe(recipeInfo);
-   self.SchematicForm.Details:CancelAllAnims();
+hooksecurefunc(ProfessionsFrame.OrdersPage.OrderView, "SetOrder", function(self ,order,b)
 
-   self.SchematicForm:ClearTransaction();
-   self.SchematicForm:Init(highestRecipe or recipeInfo);
-
-   self.GuildFrame:Clear();
-
-   self:ValidateControls();
-end
+   AddonNS.main:OnRecipeSelected(C_TradeSkillUI.GetRecipeInfo(order.spellID))
+end)
 
 EventRegistry:RegisterCallback("ProfessionsRecipeListMixin.Event.OnRecipeSelected", self.OnRecipeSelected, self);
