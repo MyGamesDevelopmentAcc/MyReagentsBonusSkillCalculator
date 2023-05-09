@@ -34,9 +34,7 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
    local t2BonusSkillFromMaterials, t3BonusSkillFromMaterials = AddonNS.recipeUtils.getBonusSkillFromMaterials(
       recipeInfo)
 
-   -- currently this is just for printing so I could easily copy paste
-   --print(AddonNS.recipeUtils.getHighestTierItemLink(recipeInfo))
-
+   
 
 
    local calculateChancesToReachDifficulty = AddonNS.recipeUtils.calculateChancesToReachDifficulty;
@@ -106,7 +104,7 @@ function self:OnRecipeSelected(recipeInfo, recipeList)
 
 
    AddonNS.gui.mainFrame:Show();
-   AddonNS.gui:DisplayData(toDisplay);
+   AddonNS.gui:DisplayData(toDisplay, AddonNS.recipeUtils.getHighestTierItemLink(recipeInfo));
 end
 
 function self:SelectRecipe(recipeInfo)

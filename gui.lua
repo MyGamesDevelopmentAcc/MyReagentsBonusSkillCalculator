@@ -163,7 +163,8 @@ do
     list:SetMultiSelection(false);
 end
 
-function self:DisplayData(toDisplay)
+function self:DisplayData(toDisplay, title)
+    self.mainFrame.title:SetText(title);
     list:RemoveAll()
     for i = 1, #toDisplay, 1 do
         local embelishment = false;
@@ -202,3 +203,10 @@ function self:DisplayData(toDisplay)
     end
     list:UpdateView()
 end
+self.mainFrame.title = GS.CreateFontString(self.mainFrame, nil, "ARTWORK", "Title", "TOP", self.mainFrame, "TOP", 0, -10);
+self.mainFrame.title:SetTextColor(1, 1, 1, 1);
+
+self.mainFrame:SetHyperlinksEnabled(true)
+self.mainFrame:SetScript("OnHyperlinkClick", function(self, link, text, button)
+	SetItemRef(link, text, button, self)
+end)

@@ -1,7 +1,7 @@
 ## Interface: 100100
 ## Title: |CFFFF2459My|r ReagentsBonusSkillCalculator
 ## DefaultState: Enabled
-## Dependencies: MyLibrary_GUI, MyLibrary_Common
+## Dependencies: MyLibrary_GUI
 ## Version: 10.1.0-0.2
 recipeUtils.lua
 main.lua
