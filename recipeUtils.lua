@@ -4,12 +4,15 @@ local self = AddonNS.recipeUtils
 function self.getRecipeSlotInfo(recipeInfo)
    local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
 
-   local recipeReagents = {}
    local repo = {
       [111] = "Infuse with Power",
       [126] = "Infuse with Power",
       [180] = "Add Embellishment",
       [123] = "Add Embellishment",
+      [179] = "Add Embellishment",
+      [245] = "Grant PvP Item Level",
+      [244] = "Grant PvP Item Level",
+      [246] = "Grant PvP Item Level",
       [125] = "Customize Secondary Stats",
       [227] = "Customize Secondary Stats",
       [184] = "Chain Oil",
@@ -18,6 +21,7 @@ function self.getRecipeSlotInfo(recipeInfo)
       [185] = "Curing Agent",
       [93] = "Illustrous Insight",
       [92] = "Lesser Illustrous Insight",
+      [247] = "Spark",
    };
    local ilvlModifiers = { { name = "", change = 0 }, }
    local binaryModifiers = {};
@@ -34,29 +38,28 @@ function self.getRecipeSlotInfo(recipeInfo)
          ilvlModifiers = { { name = "316", change = 0 }, { name = "343", change = 20 }, { name = "356", change = 40 },
             { name = "369", change = 60 }, { name = "382", change = 140 }, { name = "395", change = 150 },
             { name = "408", change = 160 } }
-      elseif (id == 92 or id == 93) then                    ---(Lesser) Illustrous Insight
+      elseif (id == 92 or id == 93) then            ---(Lesser) Illustrous Insight
          illustrousInsight = true;
-      elseif (repo[id] == "Add Embellishment") then         -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
+      elseif (repo[id] == "Add Embellishment") then -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
          table.insert(binaryModifiers, { name = "E", change = 25 })
       elseif (repo[id] == "Customize Secondary Stats") then -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
          table.insert(binaryModifiers, { name = "M", change = 15 })
-      elseif (repo[id] == "Chain Oil") then                 -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
+      elseif (repo[id] == "Chain Oil") then -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
          inspirationModifier = true;
       end
    end
 
    for i, v in ipairs(reagentSlotSchematics) do
       if (v.reagentType == 0) then --optional
-         -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
-         -- print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         -- print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         --end
+         if (not repo[v.slotInfo.mcrSlotID]) then
+            print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         end
       elseif (v.reagentType == 2) then --finishing
-         -- if not (repo[v.slotInfo.mcrSlotID]) then
          updateModifiers(v.slotInfo.mcrSlotID)
-         -- print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
-         -- print(v.reagentType, v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         if (not repo[v.slotInfo.mcrSlotID]) then
+            print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
+         end
       end
    end
    return ilvlModifiers, binaryModifiers, illustrousInsight
@@ -172,8 +175,8 @@ function self.getHighestTierItemLink(recipeInfo)
          itemID	number?	
    ]]
    local outputItemInfo = C_TradeSkillUI.GetRecipeOutputItemData(recipeInfo.recipeID, craftingReagents)
-   
-   
+
+
    return outputItemInfo.hyperlink;
 end
 
