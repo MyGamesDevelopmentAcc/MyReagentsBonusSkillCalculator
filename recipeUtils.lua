@@ -1,28 +1,41 @@
 local addonName, AddonNS = ...
 AddonNS.recipeUtils = {};
 local self = AddonNS.recipeUtils
+local slotIdName = {
+   [230] = "Spare Parts",
+   [223] = "Safety Components",
+   [124] = "Quenching Fluid",
+
+   [232] = "Customize Crafting Stat",
+   [222] = "Customize Crafting Stat",
+   [225] = "Amplify Secondary Stat",
+   [224] = "Amplify Secondary Stat",
+   [226] = "Add Embellishment",
+   [112] = "Add Embellishment",
+   [243] = "Customize Secondary Stats",
+
+   [111] = "Infuse with Power",
+   [126] = "Infuse with Power",
+   [180] = "Add Embellishment",
+   [123] = "Add Embellishment",
+   [179] = "Add Embellishment",
+   [245] = "Grant PvP Item Level",
+   [244] = "Grant PvP Item Level",
+   [246] = "Grant PvP Item Level",
+   [125] = "Customize Secondary Stats",
+   [227] = "Customize Secondary Stats",
+   [184] = "Chain Oil",
+   [189] = "Empower with Training Matrix",
+   [116] = "Empower with Training Matrix",
+   [185] = "Curing Agent",
+   [93] = "Illustrous Insight",
+   [92] = "Lesser Illustrous Insight",
+   [247] = "Spark",
+};
 function self.getRecipeSlotInfo(recipeInfo)
    local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
 
-   local repo = {
-      [111] = "Infuse with Power",
-      [126] = "Infuse with Power",
-      [180] = "Add Embellishment",
-      [123] = "Add Embellishment",
-      [179] = "Add Embellishment",
-      [245] = "Grant PvP Item Level",
-      [244] = "Grant PvP Item Level",
-      [246] = "Grant PvP Item Level",
-      [125] = "Customize Secondary Stats",
-      [227] = "Customize Secondary Stats",
-      [184] = "Chain Oil",
-      [189] = "Empower with Training Matrix",
-      [116] = "Empower with Training Matrix",
-      [185] = "Curing Agent",
-      [93] = "Illustrous Insight",
-      [92] = "Lesser Illustrous Insight",
-      [247] = "Spark",
-   };
+
    local ilvlModifiers = { { name = "", change = 0 }, }
    local binaryModifiers = {};
    local inspirationModifier = false;
@@ -38,13 +51,17 @@ function self.getRecipeSlotInfo(recipeInfo)
          ilvlModifiers = { { name = "316", change = 0 }, { name = "343", change = 20 }, { name = "356", change = 40 },
             { name = "369", change = 60 }, { name = "382", change = 140 }, { name = "395", change = 150 },
             { name = "408", change = 160 } }
-      elseif (id == 92 or id == 93) then            ---(Lesser) Illustrous Insight
+      elseif (id == 92 or id == 93) then                          ---(Lesser) Illustrous Insight
          illustrousInsight = true;
-      elseif (repo[id] == "Add Embellishment") then -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
+      elseif (slotIdName[id] == "Add Embellishment") then         -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
          table.insert(binaryModifiers, { name = "E", change = 25 })
-      elseif (repo[id] == "Customize Secondary Stats") then -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
+      elseif (slotIdName[id] == "Customize Secondary Stats") then -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
          table.insert(binaryModifiers, { name = "M", change = 15 })
-      elseif (repo[id] == "Chain Oil") then -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
+      elseif (slotIdName[id] == "Customize Crafting Stat") then
+         table.insert(binaryModifiers, { name = "M", change = 15 })
+      elseif (slotIdName[id] == "Amplify Secondary Stat") then
+         table.insert(binaryModifiers, { name = "M", change = 15 })
+      elseif (slotIdName[id] == "Chain Oil") then -- i know that I could send a string here already, but I dont know yet if I wont need the repo table above for smth different
          inspirationModifier = true;
       end
    end
@@ -52,12 +69,12 @@ function self.getRecipeSlotInfo(recipeInfo)
    for i, v in ipairs(reagentSlotSchematics) do
       if (v.reagentType == 0) then --optional
          updateModifiers(v.slotInfo.mcrSlotID)
-         if (not repo[v.slotInfo.mcrSlotID]) then
+         if (not slotIdName[v.slotInfo.mcrSlotID]) then
             print("optional", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
          end
       elseif (v.reagentType == 2) then --finishing
          updateModifiers(v.slotInfo.mcrSlotID)
-         if (not repo[v.slotInfo.mcrSlotID]) then
+         if (not slotIdName[v.slotInfo.mcrSlotID]) then
             print("finishing", v.slotInfo.mcrSlotID, v.slotInfo.slotText)
          end
       end
@@ -81,26 +98,29 @@ end
 local function getTierReagents(recipeReagents, tier, finalReagentsList)
    local finalReagentsList = finalReagentsList or {}
    for i = 1, #recipeReagents, 1 do
-      table.insert(finalReagentsList, recipeReagents[i][#recipeReagents[i] > 1 and tier or 1])
+      table.insert(finalReagentsList, recipeReagents[i][#recipeReagents[i] >= tier and tier or #recipeReagents[i]])
    end
    return finalReagentsList
 end
 local function getBonusSkillFromMaterials(recipeReagents, recipeID, tier)
    local craftingReagents = getTierReagents(recipeReagents, tier)
+
    local t3BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents).bonusSkill;
    return t3BonusFromMaterials;
 end
 
-local function getRequireReagents(recipeInfo)
+local function getRequireReagents(recipeInfo, ignore)
    local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
    local requiredReagent = {};
+   
    for i, v in ipairs(reagentSlotSchematics) do
-      if (v.reagentType == 1 and #v.reagents > 1) then -- basic reagent
+      if (v.reagentType == 1 and #v.reagents > 1) then -- basic reagent - for whatever reason it doersnt work when reagents without selection are also taken from this. Super weird? Is it cuz the dataSlotIndex is conflicting?
          local reagents = {}
+         
          for n, reagent in ipairs(v.reagents) do
             table.insert(reagents,
                {
-                  name = v.slotInfo.slotText .. " Q" .. n,
+                  name = #v.reagents > 1 and v.slotInfo.slotText or nil;
                   itemID = reagent.itemID,
                   dataSlotIndex = v.dataSlotIndex,
                   quantity = v.quantityRequired
@@ -142,7 +162,7 @@ local function getInfuseWithPowerReagents(recipeInfo)
       if (v.reagentType == 0) then
          local reagents = {}
          local id = v.slotInfo.mcrSlotID
-         if (id == 111 or id == 126 or id == 189) then
+         if (slotIdName[id] == "Infuse with Power") then
             local reagent = v.reagents[#v.reagents];
             table.insert(reagents,
                {
@@ -151,8 +171,31 @@ local function getInfuseWithPowerReagents(recipeInfo)
                   dataSlotIndex = v.dataSlotIndex,
                   quantity = v.quantityRequired
                })
+            table.insert(infuseWithPowerReagents, reagents)
          end
-         table.insert(infuseWithPowerReagents, reagents)
+      end
+   end
+   return infuseWithPowerReagents
+end
+
+local function getSparkReagents(recipeInfo) -- this is an ugly copy paste of the above, those functions can for sure be somehow optimized... something like current object holiding info about recipe and some calculations to avoid duplications?
+   local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
+   local infuseWithPowerReagents = {};
+   for i, v in ipairs(reagentSlotSchematics) do
+      if (v.reagentType == 0) then
+         local reagents = {}
+         local id = v.slotInfo.mcrSlotID
+         if (slotIdName[id] == "Spark") then
+            local reagent = v.reagents[#v.reagents];
+            table.insert(reagents,
+               {
+                  name = v.slotInfo.slotText,
+                  itemID = reagent.itemID,
+                  dataSlotIndex = v.dataSlotIndex,
+                  quantity = v.quantityRequired
+               })
+            table.insert(infuseWithPowerReagents, reagents)
+         end
       end
    end
    return infuseWithPowerReagents
@@ -162,10 +205,13 @@ function self.getHighestTierItemLink(recipeInfo)
    ----------------
    local required = getRequireReagents(recipeInfo);
    local infuseReagents = getInfuseWithPowerReagents(recipeInfo);
+   
+   local sparkReagent = getSparkReagents(recipeInfo);
    local craftingReagents = getTierReagents(required, 3)
    local finishing = getFinishingReagents(recipeInfo)
    getTierReagents(finishing, 1, craftingReagents);
    getTierReagents(infuseReagents, 1, craftingReagents);
+   getTierReagents(sparkReagent, 3, craftingReagents); --max level possible? currently thaty is two but lets set to three ans see - it shouldnt break in the future.
 
    --[[ returns
       CraftingRecipeOutputInfo
