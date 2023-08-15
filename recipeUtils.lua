@@ -13,12 +13,14 @@ local slotIdName = {
    [226] = "Add Embellishment",
    [112] = "Add Embellishment",
    [243] = "Customize Secondary Stats",
-
+   [182] = "Polishing Cloth",
+   [221] = "Blotting Sand",
    [111] = "Infuse with Power",
    [126] = "Infuse with Power",
    [180] = "Add Embellishment",
    [123] = "Add Embellishment",
    [179] = "Add Embellishment",
+   [178] = "Add Embellishment",
    [245] = "Grant PvP Item Level",
    [244] = "Grant PvP Item Level",
    [246] = "Grant PvP Item Level",
@@ -31,6 +33,10 @@ local slotIdName = {
    [93] = "Illustrous Insight",
    [92] = "Lesser Illustrous Insight",
    [247] = "Spark",
+   [91] = "Alchemical Catalyst",
+   [94] = "Alchemical Catalyst",
+   [181] = "Embroidery Thread",
+   [192] = "Finishing Touches",
 };
 function self.getRecipeSlotInfo(recipeInfo)
    local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;

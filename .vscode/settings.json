@@ -2,6 +2,8 @@
     "Lua.diagnostics.globals": [
         "ProfessionsFrame",
         "Professions",
-        "Add"
+        "Add",
+        "SetItemRef",
+        "ProfessionsRecipeListMixin"
     ]
 }

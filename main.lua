@@ -3,6 +3,12 @@ AddonNS.main = {};
 local self = AddonNS.main
 
 function self:OnRecipeSelected(recipeInfo)
+   if not AddonNS.gui then
+      AddonNS.createGUI()
+      hooksecurefunc(ProfessionsFrame.OrdersPage.OrderView, "SetOrder", function(self, order, b)
+         AddonNS.main:OnRecipeSelected(C_TradeSkillUI.GetRecipeInfo(order.spellID))
+      end)
+   end
    local recipeID = recipeInfo.recipeID;
 
 
@@ -34,7 +40,7 @@ function self:OnRecipeSelected(recipeInfo)
    local t2BonusSkillFromMaterials, t3BonusSkillFromMaterials = AddonNS.recipeUtils.getBonusSkillFromMaterials(
       recipeInfo)
 
-   
+
 
 
    local calculateChancesToReachDifficulty = AddonNS.recipeUtils.calculateChancesToReachDifficulty;
@@ -106,10 +112,5 @@ function self:OnRecipeSelected(recipeInfo)
    AddonNS.gui.mainFrame:Show();
    AddonNS.gui:DisplayData(toDisplay, AddonNS.recipeUtils.getHighestTierItemLink(recipeInfo));
 end
-
-hooksecurefunc(ProfessionsFrame.OrdersPage.OrderView, "SetOrder", function(self ,order,b)
-
-   AddonNS.main:OnRecipeSelected(C_TradeSkillUI.GetRecipeInfo(order.spellID))
-end)
 
 EventRegistry:RegisterCallback("ProfessionsRecipeListMixin.Event.OnRecipeSelected", self.OnRecipeSelected, self);
