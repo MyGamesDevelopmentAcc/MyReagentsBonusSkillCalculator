@@ -110,8 +110,7 @@ local function getTierReagents(recipeReagents, tier, finalReagentsList)
 end
 local function getBonusSkillFromMaterials(recipeReagents, recipeID, tier)
    local craftingReagents = getTierReagents(recipeReagents, tier)
-
-   local t3BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents).bonusSkill;
+   local t3BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents, "asd", false).bonusSkill;
    return t3BonusFromMaterials;
 end
 
@@ -120,7 +119,7 @@ local function getRequireReagents(recipeInfo, ignore)
    local requiredReagent = {};
    
    for i, v in ipairs(reagentSlotSchematics) do
-      if (v.reagentType == 1 and #v.reagents > 1) then -- basic reagent - for whatever reason it doersnt work when reagents without selection are also taken from this. Super weird? Is it cuz the dataSlotIndex is conflicting?
+      if (v.reagentType == Enum.CraftingReagentType.Basic and #v.reagents > 1) then -- basic reagent - for whatever reason it doersnt work when reagents without selection are also taken from this. Super weird? Is it cuz the dataSlotIndex is conflicting?
          local reagents = {}
          
          for n, reagent in ipairs(v.reagents) do
@@ -234,6 +233,8 @@ end
 
 function self.getBonusSkillFromMaterials(recipeInfo)
    local requiredReagent = getRequireReagents(recipeInfo)
+   print(getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 1), getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 2),
+   getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 3))
    return getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 2),
        getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 3)
 end

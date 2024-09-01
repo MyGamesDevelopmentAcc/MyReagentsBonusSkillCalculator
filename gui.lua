@@ -12,7 +12,7 @@ function AddonNS.createGUI()
 
     --self.mainFrame = GS:CreateSimpleFrame(addonName, 100, 460);
 
-    local f = CreateFrame("Frame", frameName, ProfessionsFrame, "SimplePanelTemplate");
+    local f = CreateFrame("Frame", nil, ProfessionsFrame, "SimplePanelTemplate");
     f:SetWidth(360);
     f:SetHeight(500);
     self.mainFrame = f;

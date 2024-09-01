@@ -14,8 +14,15 @@ function self:OnRecipeSelected(recipeInfo)
 
    local ilvlModifiers, binaryModifiers, illustrousInsight = AddonNS.recipeUtils.getRecipeSlotInfo(recipeInfo)
 
+--    local schematic = C_TradeSkillUI.GetRecipeSchematic(recipeID, false);
+--    print(schematic, schematic.currentRecipeInfo, schematic.transaction, schematic.GetRecipeOperationInfo)
 
-   local opInfo = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, {})
+--   local t = CreateProfessionsRecipeTransaction(schematic)
+  
+--   print("tr",t)
+  
+--   local opInfo = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, {}, t:GetAllocationItemGUID(), false)
+   local opInfo = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, {}, "asd", false)
    if (not opInfo) then return end
 
    local baseSkill = opInfo.baseSkill;
