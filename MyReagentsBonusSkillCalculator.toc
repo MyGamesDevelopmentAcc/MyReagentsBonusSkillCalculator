@@ -1,8 +1,32 @@
-## Interface: 100107
-## Title: |CFFFF2459My|r ReagentsBonusSkillCalculator
+## Interface: 110002
+## Version: @project-version@
 ## DefaultState: Enabled
-## Dependencies: MyLibrary_GUI
-## Version: 10.1.7-0.5
+### AddonCompartmentFunc: MyTestsAddon_MinimapOnClick
+
+#@non-debug@
+# ## Title: |cffff2459My|r ReagentsBonusSkillCalculator
+#@end-non-debug@
+#@debug@
+## Title: |cffff2459My|r ReagentsBonusSkillCalculator  |cffff0000[DEVELOPMENT VERSION]
+#@end-debug@
+
+#@non-debug@
+# ## SavedVariablesPerCharacter: MyReagentsBonusSkillCalculatorDB
+#@end-non-debug@
+#@debug@
+## SavedVariablesPerCharacter: dev_MyReagentsBonusSkillCalculatorDB
+#@end-debug@
+
+#@debug@
+## Dependencies:  MyLibrary_GUI, MyLibrary_Common
+#@end-debug@
+#@non-debug@
+# ## OptionalDeps:  MyLibrary_GUI, MyLibrary_Common
+# Libs/MyLibrary_Common/common.xml
+# Libs/MyLibrary_GUI/gui.xml
+#@end-non-debug@
+
+init.lua
 recipeUtils.lua
 main.lua
 gui.lua

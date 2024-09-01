@@ -1,5 +1,17 @@
 local addonName, AddonNS = ...
 AddonNS.recipeUtils = {};
+MyEnum = MyEnum or {};
+MyEnum.CraftingQuality = {
+   ReagentTier1 = 1,
+   ReagentTier2 = 2,
+   ReagentTier3 = 3,
+   ItemTier1 = 4,
+   ItemTier2 = 5,
+   ItemTier3 = 6,
+   ItemTier4 = 7,
+   ItemTier5 = 8
+}
+
 local self = AddonNS.recipeUtils
 local slotIdName = {
    [230] = "Spare Parts",
@@ -108,33 +120,35 @@ local function getTierReagents(recipeReagents, tier, finalReagentsList)
    end
    return finalReagentsList
 end
+
 local function getBonusSkillFromMaterials(recipeReagents, recipeID, tier)
    local craftingReagents = getTierReagents(recipeReagents, tier)
-   local t3BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents, "asd", false).bonusSkill;
+   local t3BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents, "asd", false)
+   .bonusSkill;
    return t3BonusFromMaterials;
 end
 
-local function getRequireReagents(recipeInfo, ignore)
+local function getBasicReagents(recipeInfo, ignore)
    local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
-   local requiredReagent = {};
-   
+   local basicReagents = {};
+
    for i, v in ipairs(reagentSlotSchematics) do
       if (v.reagentType == Enum.CraftingReagentType.Basic and #v.reagents > 1) then -- basic reagent - for whatever reason it doersnt work when reagents without selection are also taken from this. Super weird? Is it cuz the dataSlotIndex is conflicting?
          local reagents = {}
-         
+
          for n, reagent in ipairs(v.reagents) do
             table.insert(reagents,
                {
-                  name = #v.reagents > 1 and v.slotInfo.slotText or nil;
+                  name = #v.reagents > 1 and v.slotInfo.slotText or nil,
                   itemID = reagent.itemID,
                   dataSlotIndex = v.dataSlotIndex,
                   quantity = v.quantityRequired
                })
          end
-         table.insert(requiredReagent, reagents)
+         table.insert(basicReagents, reagents)
       end
    end
-   return requiredReagent
+   return basicReagents
 end
 
 local function getFinishingReagents(recipeInfo)
@@ -164,7 +178,7 @@ local function getInfuseWithPowerReagents(recipeInfo)
 
    local infuseWithPowerReagents = {};
    for i, v in ipairs(reagentSlotSchematics) do
-      if (v.reagentType == 0) then
+      if (v.reagentType == Enum.CraftingReagentType.Modifying) then
          local reagents = {}
          local id = v.slotInfo.mcrSlotID
          if (slotIdName[id] == "Infuse with Power") then
@@ -208,11 +222,11 @@ end
 
 function self.getHighestTierItemLink(recipeInfo)
    ----------------
-   local required = getRequireReagents(recipeInfo);
+   local basic = getBasicReagents(recipeInfo);
    local infuseReagents = getInfuseWithPowerReagents(recipeInfo);
-   
+
    local sparkReagent = getSparkReagents(recipeInfo);
-   local craftingReagents = getTierReagents(required, 3)
+   local craftingReagents = getTierReagents(basic, 3)
    local finishing = getFinishingReagents(recipeInfo)
    getTierReagents(finishing, 1, craftingReagents);
    getTierReagents(infuseReagents, 1, craftingReagents);
@@ -232,11 +246,12 @@ function self.getHighestTierItemLink(recipeInfo)
 end
 
 function self.getBonusSkillFromMaterials(recipeInfo)
-   local requiredReagent = getRequireReagents(recipeInfo)
-   print(getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 1), getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 2),
-   getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 3))
-   return getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 2),
-       getBonusSkillFromMaterials(requiredReagent, recipeInfo.recipeID, 3)
+   local basicReagents = getBasicReagents(recipeInfo)
+   print(getBonusSkillFromMaterials(basicReagents, recipeInfo.recipeID, 1),
+      getBonusSkillFromMaterials(basicReagents, recipeInfo.recipeID, 2),
+      getBonusSkillFromMaterials(basicReagents, recipeInfo.recipeID, 3))
+   return getBonusSkillFromMaterials(basicReagents, recipeInfo.recipeID, 2),
+       getBonusSkillFromMaterials(basicReagents, recipeInfo.recipeID, 3)
 end
 
 function self.calculateChancesToReachDifficulty(difficulty,
