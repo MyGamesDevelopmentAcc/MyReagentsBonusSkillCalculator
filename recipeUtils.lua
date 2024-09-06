@@ -50,6 +50,117 @@ local slotIdName = {
    [181] = "Embroidery Thread",
    [192] = "Finishing Touches",
 };
+
+function self.GetReagents(recipeInfo, reagentType, onlyRequired)
+   local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
+   local craftingReagents = {};
+
+   for i, reagentSlotSchematic in ipairs(reagentSlotSchematics) do
+      if ((not onlyRequired or reagentSlotSchematic.required) and
+             (reagentSlotSchematic.dataSlotType == Enum.TradeskillSlotDataType.ModifiedReagent)
+             and (reagentType and reagentSlotSchematic.reagentType == reagentType or not reagentType)) then --- Enum.CraftingReagentType.Modifying
+         local reagents = {}
+            
+         for n, reagent in ipairs(reagentSlotSchematic.reagents) do
+            table.insert(reagents,
+               {
+                  name = 
+                  -- #reagentSlotSchematic.reagents > 1 and
+                      (
+                     --  reagentSlotSchematic.slotText or reagentSlotSchematic.slotInfo and 
+                      reagentSlotSchematic.slotInfo.slotText) or
+                      C_Item.GetItemNameByID(reagentSlotSchematic.reagents[1].itemID),
+                  itemID = reagent.itemID,
+                  dataSlotIndex = reagentSlotSchematic.dataSlotIndex,
+                  quantity = reagentSlotSchematic.quantityRequired
+               })
+         end
+         craftingReagents[reagentSlotSchematic.slotInfo.slotText or
+                      C_Item.GetItemNameByID(reagentSlotSchematic.reagents[1].itemID)] = reagents
+         -- table.insert(craftingReagents, reagents)
+      end
+   end
+   return craftingReagents
+end
+
+function self.GetRequiredMCRReagents(recipeInfo, ignore)
+   return self.GetReagents(recipeInfo, Enum.CraftingReagentType.Basic, true)
+   -- local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
+   -- local requiredReagents = {};
+
+   -- for i, reagentSlotSchematic in ipairs(reagentSlotSchematics) do
+   --    if (reagentSlotSchematic.required and reagentSlotSchematic.dataSlotType == Enum.TradeskillSlotDataType.ModifiedReagent) then
+   --       local reagents = {}
+
+   --       for n, reagent in ipairs(reagentSlotSchematic.reagents) do
+   --          table.insert(reagents,
+   --             {
+   --                name = #reagentSlotSchematic.reagents > 1 and
+   --                    (reagentSlotSchematic.slotText or reagentSlotSchematic.slotInfo and reagentSlotSchematic.slotInfo.slotText) or
+   --                    C_Item.GetItemNameByID(reagentSlotSchematic.reagents[1].itemID),
+   --                itemID = reagent.itemID,
+   --                dataSlotIndex = reagentSlotSchematic.dataSlotIndex,
+   --                quantity = reagentSlotSchematic.quantityRequired
+   --             })
+   --       end
+   --       table.insert(requiredReagents, reagents)
+   --    end
+   -- end
+   -- return requiredReagents
+end
+
+function self.GetModifyingReagents(recipeInfo)
+   local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
+
+   local modyfingReagents = {};
+   for i, reagentSlotSchematic in ipairs(reagentSlotSchematics) do
+      if (reagentSlotSchematic.reagentType == Enum.CraftingReagentType.Modifying) then
+         local reagents = {}
+         for n, reagent in ipairs(reagentSlotSchematic.reagents) do
+            table.insert(reagents,
+               {
+                  name = #reagentSlotSchematic.reagents > 1 and
+                      (reagentSlotSchematic.slotText or reagentSlotSchematic.slotInfo and reagentSlotSchematic.slotInfo.slotText) or
+                      C_Item.GetItemNameByID(reagentSlotSchematic.reagents[1].itemID),
+                  itemID = reagent.itemID,
+                  dataSlotIndex = reagentSlotSchematic.dataSlotIndex,
+                  quantity = reagentSlotSchematic.quantityRequired
+               })
+         end
+         table.insert(modyfingReagents, reagents)
+      end
+   end
+   return modyfingReagents
+end
+
+-- function self.GetBasicReagents(recipeInfo, ignore)
+--    local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
+--    local basicReagents = {};
+
+--    for i, reagentSlotSchematic in ipairs(reagentSlotSchematics) do
+--       if (reagentSlotSchematic.reagentType == Enum.CraftingReagentType.Basic and reagentSlotSchematic.dataSlotType == Enum.TradeskillSlotDataType.ModifiedReagent) then
+--          local reagents = {}
+
+--          for n, reagent in ipairs(reagentSlotSchematic.reagents) do
+--             table.insert(reagents,
+--                {
+--                   name = #reagentSlotSchematic.reagents > 1 and
+--           (reagentSlotSchematic.slotText or reagentSlotSchematic.slotInfo and reagentSlotSchematic.slotInfo.slotText) or
+--           C_Item.GetItemNameByID(reagentSlotSchematic.reagents[1].itemID);
+--                   itemID = reagent.itemID,
+--                   dataSlotIndex = reagentSlotSchematic.dataSlotIndex,
+--                   quantity = reagentSlotSchematic.quantityRequired
+--                })
+--          end
+--          table.insert(basicReagents, reagents)
+--       end
+--    end
+--    return basicReagents
+-- end
+
+
+
+
 function self.getRecipeSlotInfo(recipeInfo)
    local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
 
@@ -113,7 +224,7 @@ function self.getBonusStats(opInfo)
    return bonusStats;
 end
 
-local function getTierReagents(recipeReagents, tier, finalReagentsList)
+function self.GetTierReagents(recipeReagents, tier, finalReagentsList)
    local finalReagentsList = finalReagentsList or {}
    for i = 1, #recipeReagents, 1 do
       table.insert(finalReagentsList, recipeReagents[i][#recipeReagents[i] >= tier and tier or #recipeReagents[i]])
@@ -122,27 +233,31 @@ local function getTierReagents(recipeReagents, tier, finalReagentsList)
 end
 
 local function getBonusSkillFromMaterials(recipeReagents, recipeID, tier)
-   local craftingReagents = getTierReagents(recipeReagents, tier)
+   local craftingReagents = self.GetTierReagents(recipeReagents, tier)
    local t3BonusFromMaterials = C_TradeSkillUI.GetCraftingOperationInfo(recipeID, craftingReagents, "asd", false)
-   .bonusSkill;
+       .bonusSkill;
    return t3BonusFromMaterials;
 end
 
-local function getBasicReagents(recipeInfo, ignore)
+
+
+function self.GetBasicReagents(recipeInfo, ignore)
    local reagentSlotSchematics = C_TradeSkillUI.GetRecipeSchematic(recipeInfo.recipeID, false).reagentSlotSchematics;
    local basicReagents = {};
 
-   for i, v in ipairs(reagentSlotSchematics) do
-      if (v.reagentType == Enum.CraftingReagentType.Basic and #v.reagents > 1) then -- basic reagent - for whatever reason it doersnt work when reagents without selection are also taken from this. Super weird? Is it cuz the dataSlotIndex is conflicting?
+   for i, reagentSlotSchematic in ipairs(reagentSlotSchematics) do
+      if (reagentSlotSchematic.reagentType == Enum.CraftingReagentType.Basic and reagentSlotSchematic.dataSlotType == Enum.TradeskillSlotDataType.ModifiedReagent) then
          local reagents = {}
 
-         for n, reagent in ipairs(v.reagents) do
+         for n, reagent in ipairs(reagentSlotSchematic.reagents) do
             table.insert(reagents,
                {
-                  name = #v.reagents > 1 and v.slotInfo.slotText or nil,
+                  name = #reagentSlotSchematic.reagents > 1 and
+                      (reagentSlotSchematic.slotText or reagentSlotSchematic.slotInfo and reagentSlotSchematic.slotInfo.slotText) or
+                      C_Item.GetItemNameByID(reagentSlotSchematic.reagents[1].itemID),
                   itemID = reagent.itemID,
-                  dataSlotIndex = v.dataSlotIndex,
-                  quantity = v.quantityRequired
+                  dataSlotIndex = reagentSlotSchematic.dataSlotIndex,
+                  quantity = reagentSlotSchematic.quantityRequired
                })
          end
          table.insert(basicReagents, reagents)
@@ -222,15 +337,15 @@ end
 
 function self.getHighestTierItemLink(recipeInfo)
    ----------------
-   local basic = getBasicReagents(recipeInfo);
+   local basic = self.GetBasicReagents(recipeInfo);
    local infuseReagents = getInfuseWithPowerReagents(recipeInfo);
 
    local sparkReagent = getSparkReagents(recipeInfo);
-   local craftingReagents = getTierReagents(basic, 3)
+   local craftingReagents = self.GetTierReagents(basic, 3)
    local finishing = getFinishingReagents(recipeInfo)
-   getTierReagents(finishing, 1, craftingReagents);
-   getTierReagents(infuseReagents, 1, craftingReagents);
-   getTierReagents(sparkReagent, 3, craftingReagents); --max level possible? currently thaty is two but lets set to three ans see - it shouldnt break in the future.
+   self.GetTierReagents(finishing, 1, craftingReagents);
+   self.GetTierReagents(infuseReagents, 1, craftingReagents);
+   self.GetTierReagents(sparkReagent, 3, craftingReagents); --max level possible? currently thaty is two but lets set to three ans see - it shouldnt break in the future.
 
    --[[ returns
       CraftingRecipeOutputInfo
@@ -246,7 +361,7 @@ function self.getHighestTierItemLink(recipeInfo)
 end
 
 function self.getBonusSkillFromMaterials(recipeInfo)
-   local basicReagents = getBasicReagents(recipeInfo)
+   local basicReagents = self.GetBasicReagents(recipeInfo)
    print(getBonusSkillFromMaterials(basicReagents, recipeInfo.recipeID, 1),
       getBonusSkillFromMaterials(basicReagents, recipeInfo.recipeID, 2),
       getBonusSkillFromMaterials(basicReagents, recipeInfo.recipeID, 3))
