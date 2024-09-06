@@ -617,26 +617,67 @@ function self:OnRecipeSelected(recipeInfo)
 
 
    local basicsFilteredReagentsPermutationSkillCostNo = #basicsFilteredReagentsPermutationSkillCost;
-   local finishingReagentsBoostNo = 1;
+   -- local finishingReagentsBoostNo = 1;
    local finishingPossibleSkillIncreases = {};
    for combinationsSkillIncrease, combinations in pairs(possibleSkillIncreases) do
       table.insert(finishingPossibleSkillIncreases, combinationsSkillIncrease);
    end
    table.sort(finishingPossibleSkillIncreases);
 
+   local finishingForTierFound = {};
+
+   local finalTiers = {}
+   local function createNewFinalTier(tier)
+      local newTier = {};
+      for key, value in pairs(tier) do
+         newTier[key] = value;
+      end
+      table.insert(finalTiers, newTier)
+      return newTier;
+   end
+
    for index, tier in ipairs(alltiers) do
       while (basicsFilteredReagentsPermutationSkillCostNo > 0 and basicsFilteredReagentsPermutationSkillCost[basicsFilteredReagentsPermutationSkillCostNo].bonusSkill + baseCraftingOperationInfo.bonusSkill + baseCraftingOperationInfo.baseSkill < tier.skillThreshold) do
+         for i, finishingSkillIncreaseValue in ipairs(finishingPossibleSkillIncreases) do
+            finishingForTierFound[index] = finishingForTierFound[index] or {};
+            if (not finishingForTierFound[index][finishingSkillIncreaseValue]) then
+               if (basicsFilteredReagentsPermutationSkillCost[basicsFilteredReagentsPermutationSkillCostNo].bonusSkill + baseCraftingOperationInfo.bonusSkill + baseCraftingOperationInfo.baseSkill + finishingSkillIncreaseValue >= tier.skillThreshold) then
+                  finishingForTierFound[index][finishingSkillIncreaseValue] = true;
+                  finishingForTierFound[index].found = true;
+                  local newTier = createNewFinalTier(tier);
+                  newTier.skill = basicsFilteredReagentsPermutationSkillCost
+                      [basicsFilteredReagentsPermutationSkillCostNo]
+                      .bonusSkill + baseCraftingOperationInfo.bonusSkill + baseCraftingOperationInfo.baseSkill +
+                      finishingSkillIncreaseValue;
+                  newTier.finishingSkillIncrease = finishingSkillIncreaseValue;
+                  newTier.permutation = basicsFilteredReagentsPermutationSkillCost
+                      [basicsFilteredReagentsPermutationSkillCostNo]
+                      .permutation;
+                  newTier.basicCost = basicsFilteredReagentsPermutationSkillCost
+                      [basicsFilteredReagentsPermutationSkillCostNo].cost;
+                  newTier.basicBonusSkill = basicsFilteredReagentsPermutationSkillCost
+                      [basicsFilteredReagentsPermutationSkillCostNo]
+                      .bonusSkill
+               end
+            end
+         end
+
          basicsFilteredReagentsPermutationSkillCostNo = basicsFilteredReagentsPermutationSkillCostNo - 1;
       end
 
       if (basicsFilteredReagentsPermutationSkillCostNo > 0) then
-         tier.skill = basicsFilteredReagentsPermutationSkillCost[basicsFilteredReagentsPermutationSkillCostNo]
+         local newTier = createNewFinalTier(tier);
+         newTier.skill = basicsFilteredReagentsPermutationSkillCost[basicsFilteredReagentsPermutationSkillCostNo]
              .bonusSkill + baseCraftingOperationInfo.bonusSkill + baseCraftingOperationInfo.baseSkill;
-         tier.permutation = basicsFilteredReagentsPermutationSkillCost[basicsFilteredReagentsPermutationSkillCostNo]
+         newTier.permutation = basicsFilteredReagentsPermutationSkillCost[basicsFilteredReagentsPermutationSkillCostNo]
              .permutation;
-         tier.basicCost = basicsFilteredReagentsPermutationSkillCost[basicsFilteredReagentsPermutationSkillCostNo].cost;
-         tier.basicBonusSkill = basicsFilteredReagentsPermutationSkillCost[basicsFilteredReagentsPermutationSkillCostNo]
+         newTier.basicCost = basicsFilteredReagentsPermutationSkillCost[basicsFilteredReagentsPermutationSkillCostNo]
+             .cost;
+         newTier.basicBonusSkill = basicsFilteredReagentsPermutationSkillCost
+             [basicsFilteredReagentsPermutationSkillCostNo]
              .bonusSkill
+      elseif (not finishingForTierFound[index] or not finishingForTierFound[index].found) then
+         createNewFinalTier(tier);
       end
 
       -- for combinationsSkillIncrease, combinations in pairs(possibleSkillIncreases) do
@@ -649,27 +690,27 @@ function self:OnRecipeSelected(recipeInfo)
       --       print("---------")
       --    end
       -- end
-      if (basicsFilteredReagentsPermutationSkillCostNo == 0) then
-         -- print("finishingPossibleSkillIncreases[finishingReagentsBoostNo]",
-         --    finishingPossibleSkillIncreases[finishingReagentsBoostNo])
-         while (finishingReagentsBoostNo <= #finishingPossibleSkillIncreases and basicsFilteredReagentsPermutationSkillCost[1].bonusSkill + baseCraftingOperationInfo.bonusSkill + baseCraftingOperationInfo.baseSkill + finishingPossibleSkillIncreases[finishingReagentsBoostNo] < tier.skillThreshold) do
-            -- print("finishingPossibleSkillIncreases[finishingReagentsBoostNo]",
-            --    finishingPossibleSkillIncreases[finishingReagentsBoostNo])
-            finishingReagentsBoostNo = finishingReagentsBoostNo + 1;
-         end
+      -- if (basicsFilteredReagentsPermutationSkillCostNo == 0) then
+      --    -- print("finishingPossibleSkillIncreases[finishingReagentsBoostNo]",
+      --    --    finishingPossibleSkillIncreases[finishingReagentsBoostNo])
+      --    while (finishingReagentsBoostNo <= #finishingPossibleSkillIncreases and basicsFilteredReagentsPermutationSkillCost[1].bonusSkill + baseCraftingOperationInfo.bonusSkill + baseCraftingOperationInfo.baseSkill + finishingPossibleSkillIncreases[finishingReagentsBoostNo] < tier.skillThreshold) do
+      --       -- print("finishingPossibleSkillIncreases[finishingReagentsBoostNo]",
+      --       --    finishingPossibleSkillIncreases[finishingReagentsBoostNo])
+      --       finishingReagentsBoostNo = finishingReagentsBoostNo + 1;
+      --    end
 
-         if (finishingReagentsBoostNo <= #finishingPossibleSkillIncreases) then
-            tier.skill = basicsFilteredReagentsPermutationSkillCost[1]
-                .bonusSkill + baseCraftingOperationInfo.bonusSkill + baseCraftingOperationInfo.baseSkill +
-                finishingPossibleSkillIncreases[finishingReagentsBoostNo];
-            tier.finishingSkillIncrease = finishingPossibleSkillIncreases[finishingReagentsBoostNo];
-            tier.permutation = basicsFilteredReagentsPermutationSkillCost[1]
-                .permutation;
-            tier.basicCost = basicsFilteredReagentsPermutationSkillCost[1].cost;
-            tier.basicBonusSkill = basicsFilteredReagentsPermutationSkillCost[1]
-                .bonusSkill
-         end
-      end
+      --    if (finishingReagentsBoostNo <= #finishingPossibleSkillIncreases) then
+      --       tier.skill = basicsFilteredReagentsPermutationSkillCost[1]
+      --           .bonusSkill + baseCraftingOperationInfo.bonusSkill + baseCraftingOperationInfo.baseSkill +
+      --           finishingPossibleSkillIncreases[finishingReagentsBoostNo];
+      --       tier.finishingSkillIncrease = finishingPossibleSkillIncreases[finishingReagentsBoostNo];
+      --       tier.permutation = basicsFilteredReagentsPermutationSkillCost[1]
+      --           .permutation;
+      --       tier.basicCost = basicsFilteredReagentsPermutationSkillCost[1].cost;
+      --       tier.basicBonusSkill = basicsFilteredReagentsPermutationSkillCost[1]
+      --           .bonusSkill
+      --    end
+      -- end
    end
 
    -- for index, value in ipairs(alltiers) do
@@ -690,7 +731,7 @@ function self:OnRecipeSelected(recipeInfo)
    end
    table.sort(modyfingOrder);
    local toDisplay = {}
-   for index, tier in ipairs(alltiers) do
+   for index, tier in ipairs(finalTiers) do
       local basicPrint = "";
       if tier.permutation then
          local basicReagents = getfilteredBasicReagentsFromPermutation(tier.permutation)
@@ -720,7 +761,7 @@ function self:OnRecipeSelected(recipeInfo)
       else
          basicPrint = "unreachable"
       end
-      
+
 
 
       local row = {
@@ -980,7 +1021,13 @@ function self:OnRecipeSelected(recipeInfo)
 
 
    AddonNS.gui.mainFrame:Show();
-   AddonNS.gui:DisplayData(toDisplay, AddonNS.recipeUtils.getHighestTierItemLink(recipeInfo));
+   AddonNS.gui:DisplayData(toDisplay,
+      "Max skill: " ..
+      (basicsFilteredReagentsPermutationSkillCost[1].bonusSkill + baseCraftingOperationInfo.bonusSkill + baseCraftingOperationInfo.baseSkill) ..
+      ", "
+      .. "Finishing max: " ..
+      finishingPossibleSkillIncreases[#finishingPossibleSkillIncreases] .. ", "
+      .. AddonNS.recipeUtils.getHighestTierItemLink(recipeInfo));
 end
 
 EventRegistry:RegisterCallback("ProfessionsRecipeListMixin.Event.OnRecipeSelected", self.OnRecipeSelected, self);

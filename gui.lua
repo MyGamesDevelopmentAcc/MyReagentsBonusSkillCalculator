@@ -13,7 +13,7 @@ function AddonNS.createGUI()
     --self.mainFrame = GS:CreateSimpleFrame(addonName, 100, 460);
 
     local f = CreateFrame("Frame", nil, ProfessionsFrame, "SimplePanelTemplate");
-    f:SetWidth(360);
+    f:SetWidth(520);
     f:SetHeight(500);
     self.mainFrame = f;
     self.mainFrame:SetPoint("TOPLEFT", ProfessionsFrame, "TOPRIGHT", 0, 0);
@@ -46,9 +46,9 @@ function AddonNS.createGUI()
                     --     width = 40,
                     -- },
                     {
-                        id = "modyfing",
-                        name = "modyfing",
-                        width = 30,
+                        id = "mod",
+                        name = "mod",
+                        width = 50,
                         sortFunction = function(a, b)
                             return a > b
                         end,
@@ -64,7 +64,7 @@ function AddonNS.createGUI()
                     {
                         id = "skill",
                         name = "skill",
-                        width = 40,
+                        width = 50,
                         sortFunction = function(a, b)
                             return a > b
                         end,
@@ -72,7 +72,19 @@ function AddonNS.createGUI()
                     {
                         id = "difficulty",
                         name = "difficulty",
-                        width = 40,
+                        width = 50,
+                        sortFunction = function(a, b)
+                            return a > b
+                        end,
+                    },
+                    {
+                        id = "cost",
+                        name = "cost",
+                        width = 100,
+                        displayFunction = function (val)
+                            return val and GetMoneyString(val, true) or ""
+                            
+                        end,
                         sortFunction = function(a, b)
                             return a > b
                         end,
@@ -242,6 +254,7 @@ function AddonNS.createGUI()
                 toDisplay.tier,
                 toDisplay.skill,
                 toDisplay.difficulty,
+                toDisplay.basicCost
             });
             -- -- tier, illu, embel, miss, %, ilvl
             -- list:Sort(1, function(a, b)
